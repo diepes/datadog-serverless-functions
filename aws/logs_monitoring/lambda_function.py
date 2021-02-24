@@ -3,6 +3,10 @@
 # This product includes software developed at Datadog (https://www.datadoghq.com/).
 # Copyright 2020 Datadog, Inc.
 
+
+print(f"PES print start lambda_function.py #22", flush=True)
+# ?PES ?"timed out" ?START ?END ?REPORT
+
 import base64
 import gzip
 import json
@@ -20,16 +24,24 @@ import ssl
 import logging
 from io import BytesIO, BufferedReader
 import time
-from requests_futures.sessions import FuturesSession
 
+print(f"PES start import #00.1", flush=True)
+from requests_futures.sessions import FuturesSession
+print(f"PES start import #00.2", flush=True)
 from datadog_lambda.wrapper import datadog_lambda_wrapper
+print(f"PES start import #00.3", flush=True)
 from datadog_lambda.metric import lambda_stats
+print(f"PES start import #00.4", flush=True)
 from datadog import api
+print(f"PES start import #00.5", flush=True)
 from trace_forwarder.connection import TraceConnection
+print(f"PES start import #00.6", flush=True)
 from enhanced_lambda_metrics import (
     get_enriched_lambda_log_tags,
     parse_and_submit_enhanced_metrics,
 )
+
+print(f"PES start import settings #00.21", flush=True)
 from settings import (
     DD_API_KEY,
     DD_FORWARD_LOG,
@@ -58,13 +70,20 @@ from settings import (
     DD_MAX_WORKERS,
 )
 
+print(f"PES start import done #00.31", flush=True)
 
 logger = logging.getLogger()
 logger.setLevel(logging.getLevelName(os.environ.get("DD_LOG_LEVEL", "INFO").upper()))
 
+logger.info('PES logger start lambda_function.py loaded')
+debug_start = time.time()  # mark start time
+debug_event = debug_start  # time between events
+
+print(f"PES @01 import requests {time.time()-debug_event:.3f}", flush=True)
 try:
     import requests
 except ImportError:
+    print(f"PES @02 import requests error {time.time()-debug_event:.3f}", flush=True)
     logger.error(
         "Could not import the 'requests' package, please ensure the Datadog "
         "Lambda Layer is installed. https://dtdg.co/forwarder-layer"
@@ -84,6 +103,7 @@ if len(DD_API_KEY) != 32:
         "Please confirm that your API key is correct"
     )
 # Validate the API key
+print(f"PES @03 validate api key {time.time()-debug_event:.3f}", flush=True)
 validation_res = requests.get(
     "{}/api/v1/validate?api_key={}".format(DD_API_URL, DD_API_KEY),
     verify=(not DD_SKIP_SSL_VALIDATION),
@@ -96,6 +116,7 @@ api._api_key = DD_API_KEY
 api._api_host = DD_API_URL
 api._cacert = not DD_SKIP_SSL_VALIDATION
 
+print(f"PES @04 trace_connection {time.time()-debug_event:.3f}", flush=True)
 trace_connection = TraceConnection(
     DD_TRACE_INTAKE_URL, DD_API_KEY, DD_SKIP_SSL_VALIDATION
 )
@@ -118,6 +139,7 @@ def compileRegex(rule, pattern):
             )
 
 
+print(f"PES @05 inc_regex {time.time()-debug_event:.3f}", flush=True)
 include_regex = compileRegex("INCLUDE_AT_MATCH", INCLUDE_AT_MATCH)
 
 exclude_regex = compileRegex("EXCLUDE_AT_MATCH", EXCLUDE_AT_MATCH)
@@ -384,6 +406,12 @@ class DatadogScrubber(object):
 
 def datadog_forwarder(event, context):
     """The actual lambda function entry point"""
+    global debug_event
+    print(f"PES print lambda_function.datadog_forwarder(event, context) received event t={time.time()-debug_event:.3f}", flush=True)
+
+    logger.info(f'PES-logger start lamda_function.py.datadog_forwarder event t={time.time()-debug_event:.3f} tt={time.time()-debug_start:.3f} loaded')
+    debug_event = time.time()
+
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug(f"Received Event:{json.dumps(event)}")
 
@@ -393,6 +421,7 @@ def datadog_forwarder(event, context):
     metrics, logs, trace_payloads = split(enrich(parse(event, context)))
 
     if DD_FORWARD_LOG:
+        print(f"PES @11 fwd logs {time.time()-debug_event:.3f}", flush=True)
         forward_logs(logs)
 
     forward_metrics(metrics)
@@ -400,8 +429,12 @@ def datadog_forwarder(event, context):
     if len(trace_payloads) > 0:
         forward_traces(trace_payloads)
 
+    print(f"PES @12 parse and sub enhanced metrics {time.time()-debug_event:.3f}", flush=True)
     parse_and_submit_enhanced_metrics(logs)
 
+    logger.info(f'PES-logger exit lamda_function.py.datadog_forwarder event t={time.time()-debug_event:.3f} tt={time.time()-debug_start:.3f} loaded')
+    print(f"PES @13 exit event {time.time()-debug_event:.3f}", flush=True)
+    debug_event = time.time()
 
 lambda_handler = datadog_lambda_wrapper(datadog_forwarder)
 
@@ -1023,6 +1056,7 @@ def merge_dicts(a, b, path=None):
     return a
 
 
+print(f"PES @08 cloudtrail_regex {time.time()-debug_event:.3f}", flush=True)
 cloudtrail_regex = re.compile(
     "\d+_CloudTrail_\w{2}-\w{4,9}-\d_\d{8}T\d{4}Z.+.json.gz$", re.I
 )
@@ -1223,3 +1257,6 @@ def invoke_additional_target_lambdas(event):
             )
 
     return
+
+
+print(f"PES @99 import requests {time.time()-debug_event:.3f}", flush=True)

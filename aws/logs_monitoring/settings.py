@@ -139,6 +139,7 @@ DD_USE_VPC = get_env_var("DD_USE_VPC", "false", boolean=True)
 DD_USE_PRIVATE_LINK = get_env_var("DD_USE_PRIVATE_LINK", "false", boolean=True)
 if DD_USE_PRIVATE_LINK:
     logger.debug("Private link enabled, overriding configuration settings")
+    print(f"PES v02 DD_USE_PRIVATE_LINK={DD_USE_PRIVATE_LINK}", flush=True)
     # Only the US Datadog site is supported when PrivateLink is enabled
     DD_SITE = "datadoghq.com"
     # TCP isn't supported when PrivateLink is enabled
@@ -215,7 +216,7 @@ DD_SOURCE = "ddsource"
 DD_CUSTOM_TAGS = "ddtags"
 DD_SERVICE = "service"
 DD_HOST = "host"
-DD_FORWARDER_VERSION = "3.28.3"
+DD_FORWARDER_VERSION = "3.28.3.1pieter"
 
 # Additional target lambda invoked async with event data
 DD_ADDITIONAL_TARGET_LAMBDAS = get_env_var("DD_ADDITIONAL_TARGET_LAMBDAS", default=None)
