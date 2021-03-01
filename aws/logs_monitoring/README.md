@@ -193,9 +193,9 @@ We love pull requests. Here's a quick guide.
 
 ## Advanced
 
-### Shipping logs to other lambda functions
+### Shipping Logs to Multiple Destinations
 
-You can ship logs to other Lambda functions using the `AdditionalTargetLambdaARNs` Cloudformation parameter. These additional Lambda functions will be called asynchronously with the same `event` the Datadog Forwarder receives.
+If you need to ship logs to multiple Datadog organizations or other destinations, configure the `AdditionalTargetLambdaARNs` Cloudformation parameter to let the Datadog Forwarder copy the incoming logs to the specified Lambda functions. These additional Lambda functions will be called asynchronously with the exact same `event` the Datadog Forwarder receives.
 
 ### AWS PrivateLink Support
 
@@ -286,11 +286,13 @@ The Datadog Forwarder is signed by Datadog. If you would like to verify the inte
 ### Log Filtering (Optional)
 
 - `ExcludeAtMatch` - DO NOT send logs matching the supplied regular expression. If a log matches both
-  the ExcludeAtMatch and IncludeAtMatch, it is excluded. Filtering rules are applied to the full
-  JSON-formatted log, including any metadata that is automatically added by the function. Note, using
-  inefficient regular expression, such as `.*`, may slow down the Lambda function.
+  the ExcludeAtMatch and IncludeAtMatch, it is excluded.
 - `IncludeAtMatch` - Only send logs matching the supplied regular expression and not excluded by
-  ExcludeAtMatch. Note, using inefficient regular expression, such as `.*`, may slow down the Lambda function.
+  ExcludeAtMatch.
+
+Filtering rules are applied to the full JSON-formatted log, including any metadata that is automatically
+added by the Forwarder. Using an inefficient regular expression, such as `.*`, may slow down the Forwarder.
+To debug these regular expressions against your logs, turn on [debug logs](#troubleshooting).
 
 ### Advanced (Optional)
 

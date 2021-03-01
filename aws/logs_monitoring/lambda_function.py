@@ -4,7 +4,7 @@
 # Copyright 2020 Datadog, Inc.
 
 
-print(f"PES print start lambda_function.py #22", flush=True)
+print(f"PES print start lambda_function.py #3.28.5.02", flush=True)
 # ?PES ?"timed out" ?START ?END ?REPORT
 
 import base64
@@ -24,24 +24,25 @@ import ssl
 import logging
 from io import BytesIO, BufferedReader
 import time
-
-print(f"PES start import #00.1", flush=True)
+print(f"PES start import #00.0 requests_futures.sessions next", flush=True)
+import requests
+print(f"PES start import #00.1 requests_futures.sessions next", flush=True)
 from requests_futures.sessions import FuturesSession
-print(f"PES start import #00.2", flush=True)
+print(f"PES start import #00.2 datadog_lambda.wrapper next", flush=True)
 from datadog_lambda.wrapper import datadog_lambda_wrapper
-print(f"PES start import #00.3", flush=True)
+print(f"PES start import #00.3 datadog_lambda.metric next", flush=True)
 from datadog_lambda.metric import lambda_stats
-print(f"PES start import #00.4", flush=True)
+print(f"PES start import #00.4 datadog api next", flush=True)
 from datadog import api
-print(f"PES start import #00.5", flush=True)
+print(f"PES start import #00.5 trace_forwarder", flush=True)
 from trace_forwarder.connection import TraceConnection
-print(f"PES start import #00.6", flush=True)
+print(f"PES start import #00.6 enhanced_lambda_metrics", flush=True)
 from enhanced_lambda_metrics import (
     get_enriched_lambda_log_tags,
     parse_and_submit_enhanced_metrics,
 )
 
-print(f"PES start import settings #00.21", flush=True)
+print(f"PES start import #00.7 settings next", flush=True)
 from settings import (
     DD_API_KEY,
     DD_FORWARD_LOG,
@@ -70,28 +71,11 @@ from settings import (
     DD_MAX_WORKERS,
 )
 
-print(f"PES start import done #00.31", flush=True)
+print(f"PES start import done #00.8", flush=True)
 
 logger = logging.getLogger()
 logger.setLevel(logging.getLevelName(os.environ.get("DD_LOG_LEVEL", "INFO").upper()))
 
-logger.info('PES logger start lambda_function.py loaded')
-debug_start = time.time()  # mark start time
-debug_event = debug_start  # time between events
-
-print(f"PES @01 import requests {time.time()-debug_event:.3f}", flush=True)
-try:
-    import requests
-except ImportError:
-    print(f"PES @02 import requests error {time.time()-debug_event:.3f}", flush=True)
-    logger.error(
-        "Could not import the 'requests' package, please ensure the Datadog "
-        "Lambda Layer is installed. https://dtdg.co/forwarder-layer"
-    )
-    # Fallback to the botocore vendored version of requests, while ensuring
-    # customers have the Datadog Lambda Layer installed. The vendored version
-    # of requests is removed in botocore 1.13.x.
-    from botocore.vendored import requests
 
 # DD_API_KEY must be set
 if DD_API_KEY == "<YOUR_DATADOG_API_KEY>" or DD_API_KEY == "":
@@ -103,10 +87,11 @@ if len(DD_API_KEY) != 32:
         "Please confirm that your API key is correct"
     )
 # Validate the API key
-print(f"PES @03 validate api key {time.time()-debug_event:.3f}", flush=True)
+logger.debug("Validating the Datadog API key")
 validation_res = requests.get(
     "{}/api/v1/validate?api_key={}".format(DD_API_URL, DD_API_KEY),
     verify=(not DD_SKIP_SSL_VALIDATION),
+    timeout=10,
 )
 if not validation_res.ok:
     raise Exception("The API key is not valid.")
@@ -414,6 +399,7 @@ def datadog_forwarder(event, context):
 
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug(f"Received Event:{json.dumps(event)}")
+        logger.debug(f"Forwarder version: {DD_FORWARDER_VERSION}")
 
     if DD_ADDITIONAL_TARGET_LAMBDAS:
         invoke_additional_target_lambdas(event)
@@ -717,20 +703,25 @@ def filter_logs(logs):
     If no filtering rules exist, return all the logs.
     """
     if INCLUDE_AT_MATCH is None and EXCLUDE_AT_MATCH is None:
-        # convert to strings
         return logs
     # Add logs that should be sent to logs_to_send
     logs_to_send = []
-    # Test each log for exclusion and inclusion, if the criteria exist
     for log in logs:
+        if EXCLUDE_AT_MATCH is not None or INCLUDE_AT_MATCH is not None:
+            logger.debug("Filtering log event:")
+            logger.debug(log)
         try:
             if EXCLUDE_AT_MATCH is not None:
                 # if an exclude match is found, do not add log to logs_to_send
+                logger.debug(f"Applying EXCLUDE_AT_MATCH: {EXCLUDE_AT_MATCH}")
                 if re.search(exclude_regex, log):
+                    logger.debug("Exclude regex matched, excluding log event")
                     continue
             if INCLUDE_AT_MATCH is not None:
                 # if no include match is found, do not add log to logs_to_send
+                logger.debug(f"Applying INCLUDE_AT_MATCH: {INCLUDE_AT_MATCH}")
                 if not re.search(include_regex, log):
+                    logger.debug("Include regex did not match, excluding log event")
                     continue
             logs_to_send.append(log)
         except ScrubbingException:
