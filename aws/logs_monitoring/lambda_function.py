@@ -2,35 +2,12 @@
 # under the Apache License Version 2.0.
 # This product includes software developed at Datadog (https://www.datadoghq.com/).
 # Copyright 2020 Datadog, Inc.
+debug_count = 1
+print(f"lambda_function.py start lambda_function.py v.8", flush=True)
 
-import base64
-import gzip
-import json
 import os
-from collections import defaultdict
-from concurrent.futures import as_completed
-
-import boto3
-import botocore
-import itertools
-import re
-import urllib
-import socket
-import ssl
 import logging
-from io import BytesIO, BufferedReader
-import time
-import requests
-from requests_futures.sessions import FuturesSession
-
-from datadog_lambda.wrapper import datadog_lambda_wrapper
-from datadog_lambda.metric import lambda_stats
-from datadog import api
-from trace_forwarder.connection import TraceConnection
-from enhanced_lambda_metrics import (
-    get_enriched_lambda_log_tags,
-    parse_and_submit_enhanced_metrics,
-)
+print(f"lambda_function.py import from settings", flush=True)
 from settings import (
     DD_API_KEY,
     DD_FORWARD_LOG,
@@ -58,11 +35,42 @@ from settings import (
     DD_USE_VPC,
     DD_MAX_WORKERS,
 )
-
-
+print(f"lambda_function.py import from settings done - get logger", flush=True)
 logger = logging.getLogger()
 logger.setLevel(logging.getLevelName(os.environ.get("DD_LOG_LEVEL", "INFO").upper()))
+logger.info(f"Starting lambda_function.py 1/7 - loaded conf/env - DD_FORWARDER_VERSION={DD_FORWARDER_VERSION}")
 
+import base64
+import gzip
+import json
+from collections import defaultdict
+from concurrent.futures import as_completed
+
+import boto3
+import botocore
+import itertools
+import re
+import urllib
+import socket
+import ssl
+from io import BytesIO, BufferedReader
+import time
+import requests
+from requests_futures.sessions import FuturesSession
+logger.info("lambda_function.py 2/7 import datadog_lambda.wrapper next")
+from datadog_lambda.wrapper import datadog_lambda_wrapper
+logger.info("lambda_function.py 3/7 import datadog_lambda.metric next")
+from datadog_lambda.metric import lambda_stats
+logger.info("lambda_function.py 4/7 import datadog api next")
+from datadog import api
+logger.info("lambda_function.py 5/7 import trace_forwarder.connection next")
+from trace_forwarder.connection import TraceConnection
+logger.info("lambda_function.py 6/7 import enhanced_lamda_metrics next")
+from enhanced_lambda_metrics import (
+    get_enriched_lambda_log_tags,
+    parse_and_submit_enhanced_metrics,
+)
+logger.info("lambda_function.py 7/7 import done in lamda_function.py")
 
 # DD_API_KEY must be set
 if DD_API_KEY == "<YOUR_DATADOG_API_KEY>" or DD_API_KEY == "":
@@ -376,6 +384,9 @@ class DatadogScrubber(object):
 
 def datadog_forwarder(event, context):
     """The actual lambda function entry point"""
+    global debug_count
+    debug_count = debug_count + 1
+    logger.info(f"lambda_function.py datadog_forwarder(event, context) debug_count={debug_count}")
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug(f"Received Event:{json.dumps(event)}")
         logger.debug(f"Forwarder version: {DD_FORWARDER_VERSION}")

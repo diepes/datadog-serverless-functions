@@ -14,6 +14,7 @@ import re
 logger = logging.getLogger()
 logger.setLevel(logging.getLevelName(os.environ.get("DD_LOG_LEVEL", "INFO").upper()))
 
+print(f"LambdaInstance settings.py Start/entered", flush=True)
 
 def get_env_var(envvar, default, boolean=False):
     """
@@ -219,7 +220,7 @@ DD_SOURCE = "ddsource"
 DD_CUSTOM_TAGS = "ddtags"
 DD_SERVICE = "service"
 DD_HOST = "host"
-DD_FORWARDER_VERSION = "3.28.5"
+DD_FORWARDER_VERSION = "3.28.5.7"
 
 # Additional target lambda invoked async with event data
 DD_ADDITIONAL_TARGET_LAMBDAS = get_env_var("DD_ADDITIONAL_TARGET_LAMBDAS", default=None)
@@ -230,3 +231,5 @@ DD_S3_CACHE_LOCK_FILENAME = "cache.lock"
 
 DD_TAGS_CACHE_TTL_SECONDS = int(get_env_var("DD_TAGS_CACHE_TTL_SECONDS", default=300))
 DD_S3_CACHE_LOCK_TTL_SECONDS = 60
+
+print(f"LambdaInstance settings.py End/Exit", flush=True)
