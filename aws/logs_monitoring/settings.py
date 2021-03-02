@@ -14,7 +14,7 @@ import re
 logger = logging.getLogger()
 logger.setLevel(logging.getLevelName(os.environ.get("DD_LOG_LEVEL", "INFO").upper()))
 
-print(f"LambdaInstance settings.py Start/entered", flush=True)
+print(f"settings.py settings.py Start/entered", flush=True)
 
 def get_env_var(envvar, default, boolean=False):
     """
@@ -182,6 +182,7 @@ SCRUBBING_RULE_CONFIGS = [
 INCLUDE_AT_MATCH = get_env_var("INCLUDE_AT_MATCH", default=None)
 EXCLUDE_AT_MATCH = get_env_var("EXCLUDE_AT_MATCH", default=None)
 
+print(f"settings.py DD_API_KEY_...", flush=True)
 # DD API Key
 if "DD_API_KEY_SECRET_ARN" in os.environ:
     SECRET_ARN = os.environ["DD_API_KEY_SECRET_ARN"]
@@ -232,4 +233,4 @@ DD_S3_CACHE_LOCK_FILENAME = "cache.lock"
 DD_TAGS_CACHE_TTL_SECONDS = int(get_env_var("DD_TAGS_CACHE_TTL_SECONDS", default=300))
 DD_S3_CACHE_LOCK_TTL_SECONDS = 60
 
-print(f"LambdaInstance settings.py End/Exit", flush=True)
+print(f"settings.py settings.py End/Exit", flush=True)
