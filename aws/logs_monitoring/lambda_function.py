@@ -3,7 +3,7 @@
 # This product includes software developed at Datadog (https://www.datadoghq.com/).
 # Copyright 2020 Datadog, Inc.
 debug_count = 1
-print(f"lambda_function.py start lambda_function.py v.8", flush=True)
+print(f"lambda_function.py start lambda_function.py v.9", flush=True)
 
 import os
 import logging
